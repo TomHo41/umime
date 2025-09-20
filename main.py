@@ -7,7 +7,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 location = r"C:\Users\honzi\AppData\Local\Google\Chrome\User Data\selenium-profile"
-url = "https://www.umimecesky.cz/doplnovacka-podmet-holy-rozvity-nekolikanasobny-2"
+url = "https://www.umimecesky.cz/doplnovacka-podmet-vyjadreny-nevyjadreny-3"
 start_time = time.time()
 conn = sqlite3.connect('data.db')
 cursor = conn.cursor()
@@ -51,11 +51,6 @@ def no_answer():
                 print("no button")
                 driver.find_element(By.XPATH, '//*[@id="option1"]/span[@class="fmt-text"]').click()
                 add_sql(orginal_text, op2_text)
-                time.sleep(random.random() * 2 + 1)
-                if orginal_text.split("_")[0] == driver.find_element(By.XPATH, '//*[@id="question-content"]/span').text[:len(orginal_text.split("_")[0])]:
-                    print("button w op2")
-                    click_button(driver.find_element(By.XPATH, '//*[@id="next"]'))
-                    break
                 break
             else:
                 print("button")
@@ -96,6 +91,10 @@ while x < 500:
     y = 0
     time.sleep(random.random() * 3 + 1)
     if driver.find_elements(By.CSS_SELECTOR, '[data-shield="3"]'):
+        print("Shield 3")
+        driver.find_element(By.CSS_SELECTOR, '[data-shield="3"]').click()
+    if driver.find_element(By.XPATH, '//*[@id="option0"]/span[@class="fmt-text"]') == "":
+        print("Shield 3")
         driver.find_element(By.CSS_SELECTOR, '[data-shield="3"]').click()
     if driver.find_elements(By.CSS_SELECTOR, '[data-shield="4"]'):
         print("Shield 4")
@@ -123,6 +122,9 @@ while x < 500:
                 conn.commit
                 no_answer()
             print("Answer found!", answer)
+            WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable((By.XPATH, '//*[@id="option0"]/span[@class="fmt-text"]'))
+            )
             if driver.find_element(By.XPATH, '//*[@id="option0"]/span[@class="fmt-text"]').text == answer:
                 driver.find_element(By.XPATH, '//*[@id="option0"]/span[@class="fmt-text"]').click()
             elif driver.find_element(By.XPATH, '//*[@id="option1"]/span[@class="fmt-text"]').text == answer:
