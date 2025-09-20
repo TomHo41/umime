@@ -6,6 +6,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
+location = r"C:\Users\honzi\AppData\Local\Google\Chrome\User Data\selenium-profile"
+url = "https://www.umimecesky.cz/doplnovacka-podmet-holy-rozvity-nekolikanasobny-2"
 start_time = time.time()
 conn = sqlite3.connect('data.db')
 cursor = conn.cursor()
@@ -33,32 +35,41 @@ def no_answer():
     op1 = driver.find_element(By.XPATH, '//*[@id="option0"]/span[@class="fmt-text"]')
     op2 = driver.find_element(By.XPATH, '//*[@id="option1"]/span[@class="fmt-text"]')
     button = driver.find_element(By.XPATH, '//*[@id="next"]')
-    for i in range(3):
+    x = 0
+    while x < 3:
         print("No answer saved")
         op1 = driver.find_element(By.XPATH, '//*[@id="option0"]/span[@class="fmt-text"]')
-        op1.click()
-            
-        time.sleep(random.random() * 4)
-        op1 = driver.find_element(By.XPATH, '//*[@id="option0"]/span[@class="fmt-text"]')
         op2 = driver.find_element(By.XPATH, '//*[@id="option1"]/span[@class="fmt-text"]')
+        if x == 0:
+            op1_text = str(op1.text)
+            op2_text = str(op2.text)
+        op1.click()
+        time.sleep(3 + random.random() - random.random())     
         if orginal_text.split("_")[0] == driver.find_element(By.XPATH, '//*[@id="question-content"]/span').text[:len(orginal_text.split("_")[0])]:
             time.sleep(random.random() * 2 + 1)
             if "display: none" in driver.find_element(By.XPATH, '//*[@id="next"]').get_attribute("style"):
                 print("no button")
-                op2.click()
-                add_sql(orginal_text, op2.text)
+                driver.find_element(By.XPATH, '//*[@id="option1"]/span[@class="fmt-text"]').click()
+                add_sql(orginal_text, op2_text)
+                time.sleep(random.random() * 2 + 1)
+                if orginal_text.split("_")[0] == driver.find_element(By.XPATH, '//*[@id="question-content"]/span').text[:len(orginal_text.split("_")[0])]:
+                    print("button w op2")
+                    click_button(driver.find_element(By.XPATH, '//*[@id="next"]'))
+                    break
                 break
             else:
                 print("button")
                 time.sleep(random.random() * 3)
                 click_button(button)
-                add_sql(orginal_text, op1.text)
+                add_sql(orginal_text, op1_text)
                 break
         else:
-            add_sql(orginal_text, op1.text)
+            print("1")
+            add_sql(orginal_text, op1_text)
             break
+        x += 1
 options = webdriver.ChromeOptions()
-options.add_argument(r"user-data-dir=C:\Users\honzi\AppData\Local\Google\Chrome\User Data\selenium-profile")
+options.add_argument(rf"user-data-dir={location}")
 # optional: options.add_argument(r"--profile-directory=Default")
 
 # Remove “Chrome is being controlled” banner
@@ -66,10 +77,13 @@ options.add_experimental_option("excludeSwitches", ["enable-automation"])
 options.add_experimental_option('useAutomationExtension', False)
 
 driver = webdriver.Chrome(options=options)
-driver.get("https://www.umimecesky.cz/doplnovacka-shoda-podmetu-s-prisudkem-2-uroven")
+driver.get(url)
 x = 0
+time.sleep(2)
 while x < 500:
     text = driver.find_element(By.XPATH, '//*[@id="question-content"]/span')
+    element = driver.find_element(By.ID, "question-content")
+    print(element.text)  # ✅ prints the full text inside the div
     orginal_text = str(text.text)
     op1 = driver.find_element(By.XPATH, '//*[@id="option0"]/span[@class="fmt-text"]')
     op2 = driver.find_element(By.XPATH, '//*[@id="option1"]/span[@class="fmt-text"]')
@@ -80,21 +94,29 @@ while x < 500:
     cursor.execute(f"SELECT * FROM data WHERE text = '{orginal_text}';")
     row = cursor.fetchall()
     y = 0
-    time.sleep(random.random() * 5)
+    time.sleep(random.random() * 3 + 1)
+    if driver.find_elements(By.CSS_SELECTOR, '[data-shield="3"]'):
+        driver.find_element(By.CSS_SELECTOR, '[data-shield="3"]').click()
+    if driver.find_elements(By.CSS_SELECTOR, '[data-shield="4"]'):
+        print("Shield 4")
+        break
+        
     if len(row) != 0:
         print(row)
         answer = row[0][2]
+        print(answer)
         while orginal_text.split("_")[0] == driver.find_element(By.XPATH, '//*[@id="question-content"]/span').text[:len(orginal_text.split("_")[0])]:
             if y >= 2:
                 if answer == "í":
                     answer = "i"
-                else:
+                elif answer == "i":
                     answer = "í"
-
-                if answer == "ý":
+                elif answer == "ý":
                     answer = "y"
-                else:
+                elif answer == y:
                     answer = "ý"
+                else:
+                    y += 5
             if y >= 6:
                 print("Deleted the answer")
                 cursor.execute(f"DELETE FROM data WHERE id = '{row[0][0]}';")
