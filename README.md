@@ -1,4 +1,4 @@
-Clone deafult profile of Chrome.
-Name it selenium-profile.
+Clone deafult profile of Chrome. \n
+Name it selenium-profile. \n
 Change variable location to location to chrome on your disk.
 Every exersice change url.
